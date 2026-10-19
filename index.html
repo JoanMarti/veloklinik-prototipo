@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VeloKliniK — Prototyp v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#15171a;
+    --ink-2:#1f2226;
+    --bone:#f0f2f1;
+    --bone-2:#f8f9f8;
+    --white:#ffffff;
+    --red:#c8272b;
+    --red-dark:#8f1b1e;
+    --brass:#8a9199;
+    --green:#3f7d5c;
+    --green-bg:#e0eee5;
+    --off:#7b838a;
+    --off-bg:#e7eae9;
+    --line:rgba(21,23,26,0.12);
+    --line-strong:rgba(21,23,26,0.22);
+    --note-bg:#edf0ef;
+    --note-line:#aeb6bb;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;background:var(--bone);color:var(--ink);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3{font-family:'Space Grotesk',sans-serif;margin:0;letter-spacing:-0.02em;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit;}
+  button{font-family:inherit;}
+  :focus-visible{outline:2px solid var(--red);outline-offset:3px;}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 28px;}
+
+  /* ---------- TOPBAR ---------- */
+  .topbar{position:fixed;top:0;left:0;right:0;z-index:60;transition:background .25s ease, box-shadow .25s ease;color:#fff;}
+  .topbar.scrolled{background:rgba(21,23,26,0.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 1px 0 rgba(255,255,255,0.08);}
+  .topbar-inner{max-width:1180px;margin:0 auto;padding:14px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+  .brand-mark{display:flex;align-items:center;gap:10px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:17px;letter-spacing:-0.01em;}
+  .brand-mark .dot{width:12px;height:12px;background:var(--red);border-radius:50%;box-shadow:0 0 0 4px rgba(200,39,43,0.28);flex:none;}
+  .topnav{display:flex;gap:4px;}
+  .topnav a{font-size:13px;color:rgba(255,255,255,0.82);text-decoration:none;padding:8px 14px;border-radius:999px;transition:background .15s ease,color .15s ease;}
+  .topnav a:hover{background:rgba(255,255,255,0.12);color:#fff;}
+  .top-right{display:flex;align-items:center;gap:14px;}
+  .lang-switch{display:flex;gap:3px;background:rgba(255,255,255,0.1);padding:3px;border-radius:8px;}
+  .lang-btn{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:rgba(255,255,255,0.8);background:transparent;border:none;border-radius:6px;padding:6px 9px;cursor:pointer;transition:background .15s ease,color .15s ease;}
+  .lang-btn:hover{background:rgba(255,255,255,0.12);}
+  .lang-btn.active{background:var(--red);color:#fff;}
+
+  /* ---------- NOTES ---------- */
+
+  /* ---------- BUTTONS ---------- */
+  .btn{font-size:14.5px;font-weight:600;padding:13px 24px;border-radius:999px;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;border:1px solid transparent;transition:transform .12s ease,background .15s ease,border-color .15s ease,box-shadow .15s ease;}
+  .btn:active{transform:scale(0.97);}
+  .btn-primary{background:var(--red);color:#fff;box-shadow:0 8px 20px -8px rgba(200,39,43,0.7);}
+  .btn-primary:hover{background:var(--red-dark);}
+  .btn-outline{background:transparent;border-color:var(--line-strong);color:var(--ink);}
+  .btn-outline:hover{background:var(--white);}
+  .btn-ghost{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.4);color:#fff;backdrop-filter:blur(4px);}
+  .btn-ghost:hover{background:rgba(255,255,255,0.2);}
+
+  /* ---------- HERO ---------- */
+  .hero{position:relative;min-height:100vh;min-height:100svh;background:var(--ink);color:#fff;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;}
+  .hero-scene{position:absolute;inset:0;width:100%;height:100%;}
+  .hero-photo{position:absolute;inset:0;background-image:url('assets/hero.jpg');background-size:cover;background-position:center 35%;}
+  .hero-shade{position:absolute;inset:0;background:
+      linear-gradient(0deg,rgba(21,23,26,0.94) 0%,rgba(21,23,26,0.78) 34%,rgba(21,23,26,0.25) 62%,rgba(21,23,26,0.35) 100%),
+      linear-gradient(90deg,rgba(21,23,26,0.7) 0%,rgba(21,23,26,0.25) 55%,rgba(21,23,26,0) 100%);}
+  .hero-content{position:relative;z-index:2;padding-top:140px;padding-bottom:36px;}
+  .hero-tag{display:inline-flex;align-items:center;gap:10px;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.06em;color:#fff;background:rgba(200,39,43,0.92);padding:7px 14px 7px 12px;border-radius:4px;transform:rotate(-1.5deg);margin-bottom:26px;}
+  .hero-tag::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--ink);flex:none;}
+  .hero h1{font-size:clamp(40px,6.6vw,88px);line-height:1.02;font-weight:700;max-width:820px;margin-bottom:22px;}
+  .hero p.lead{font-size:clamp(16px,1.5vw,19px);line-height:1.6;max-width:540px;color:rgba(255,255,255,0.82);margin:0 0 32px;}
+  .cta-row{display:flex;gap:12px;flex-wrap:wrap;}
+
+  .stats{position:relative;z-index:2;display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.14);border-radius:14px;overflow:hidden;margin:44px 0 28px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
+  .stat{background:rgba(21,23,26,0.55);padding:20px 24px;}
+  .stat-v{font-family:'Space Grotesk',sans-serif;font-size:clamp(24px,3vw,38px);font-weight:700;color:#fff;line-height:1;}
+  .stat-v em{font-style:normal;color:var(--red);}
+  .stat-l{font-size:13px;color:rgba(255,255,255,0.7);margin-top:8px;}
+  @media (max-width:700px){.stats{grid-template-columns:1fr;}.stat{padding:14px 18px;}}
+
+  /* ---------- SECTIONS ---------- */
+  section{padding:104px 0;position:relative;}
+  .eyebrow{display:inline-flex;align-items:center;gap:10px;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.04em;text-transform:uppercase;color:var(--red-dark);margin-bottom:18px;}
+  .eyebrow::before{content:'';width:28px;height:2px;background:var(--red);}
+  .section-title{font-size:clamp(30px,4vw,48px);font-weight:700;line-height:1.08;max-width:680px;margin-bottom:16px;}
+  .section-lead{font-size:16.5px;color:#4a5056;max-width:560px;line-height:1.65;margin:0 0 40px;}
+
+  /* idea 1 */
+  .split{display:grid;grid-template-columns:0.9fr 1.1fr;gap:64px;align-items:center;}
+  @media (max-width:900px){.split{grid-template-columns:1fr;gap:36px;}}
+  .wizard-shell{background:var(--white);border-radius:20px;padding:34px;width:100%;box-shadow:0 30px 60px -30px rgba(21,23,26,0.35),0 0 0 1px var(--line);position:relative;}
+  .wizard-shell::before{content:'';position:absolute;left:34px;right:34px;top:-1px;height:4px;background:var(--red);border-radius:0 0 4px 4px;}
+  .progress-dots{display:flex;gap:6px;margin-bottom:26px;}
+  .progress-dots span{flex:1;height:4px;border-radius:2px;background:var(--line);transition:background .2s ease;}
+  .progress-dots span.active{background:var(--red);}
+  .q-title{font-size:20px;font-weight:600;margin-bottom:18px;font-family:'Space Grotesk',sans-serif;}
+  .opt-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:26px;}
+  @media (max-width:520px){.opt-grid{grid-template-columns:1fr;}}
+  .opt{text-align:left;padding:15px 16px;border:1.5px solid var(--line-strong);border-radius:12px;background:var(--bone-2);font-size:14.5px;cursor:pointer;transition:border-color .12s ease,background .12s ease,transform .12s ease;}
+  .opt:hover{border-color:var(--red);transform:translateY(-1px);}
+  .opt.sel{border-color:var(--red);background:#fbeceb;font-weight:600;}
+  .wizard-nav{display:flex;justify-content:space-between;align-items:center;}
+  .err{color:var(--red-dark);font-size:13px;margin:-14px 0 16px;}
+
+  .ticket-result{background:var(--bone-2);border:1.5px solid var(--ink);border-radius:12px;padding:26px 28px 22px;position:relative;}
+  .ticket-result::before,.ticket-result::after{content:'';position:absolute;top:96px;width:20px;height:20px;background:var(--white);border-radius:50%;border:1.5px solid var(--ink);}
+  .ticket-result::before{left:-11px;clip-path:inset(0 0 0 50%);}
+  .ticket-result::after{right:-11px;clip-path:inset(0 50% 0 0);}
+  .t-head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1.5px dashed var(--line-strong);padding-bottom:18px;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
+  .t-num{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--off);margin-bottom:4px;}
+  .t-name{font-size:24px;font-weight:700;font-family:'Space Grotesk',sans-serif;}
+  .t-price{font-family:'IBM Plex Mono',monospace;font-size:24px;font-weight:600;color:var(--red-dark);}
+  .t-list{list-style:none;padding:0;margin:0 0 22px;font-size:14px;color:#3a4047;}
+  .t-list li{padding:6px 0;display:flex;gap:10px;}
+  .t-list li::before{content:'✓';color:var(--green);font-weight:700;}
+  .t-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  .reset-link{font-size:13px;color:var(--off);text-decoration:underline;cursor:pointer;background:none;border:none;padding:14px 0 0;}
+
+  /* idea 2 (dark) */
+  #idee2{background:var(--ink);color:#fff;}
+  #idee2 .eyebrow{color:#ff8a8d;}
+  #idee2 .eyebrow::before{background:#ff8a8d;}
+  #idee2 .section-lead{color:rgba(255,255,255,0.72);}
+  .loc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+  @media (max-width:900px){.loc-grid{grid-template-columns:1fr;}}
+  .loc-card{background:var(--bone-2);color:var(--ink);border-radius:18px;padding:0 22px 24px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,0.55),0 24px 44px -26px rgba(0,0,0,0.8);transition:transform .2s ease,box-shadow .2s ease;}
+  .loc-card:hover{transform:translateY(-6px);box-shadow:0 0 0 1px rgba(255,255,255,0.7),0 34px 56px -22px rgba(0,0,0,0.85);}
+  .loc-card::before{content:'';display:block;height:190px;margin:0 -22px 20px;background-size:cover;background-position:center;}
+  .loc-card:nth-child(1)::before{background-position:center 5%,center;background-image:url('assets/europaallee.jpg'),url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 128' preserveAspectRatio='xMidYMid slice'><defs><linearGradient id='g' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%23353a3f'/><stop offset='1' stop-color='%23202327'/></linearGradient></defs><rect width='400' height='128' fill='url(%23g)'/><g fill='%2343484d'><rect x='20' y='42' width='62' height='86'/><rect x='92' y='14' width='54' height='114'/><rect x='156' y='56' width='72' height='72'/><rect x='238' y='28' width='58' height='100'/><rect x='306' y='64' width='74' height='64'/></g><g fill='%23c8272b'><rect x='106' y='30' width='9' height='9'/><rect x='252' y='44' width='9' height='9'/></g><g fill='%23e9d9a8' opacity='.8'><rect x='34' y='58' width='7' height='7'/><rect x='54' y='58' width='7' height='7'/><rect x='34' y='78' width='7' height='7'/><rect x='170' y='72' width='7' height='7'/><rect x='194' y='72' width='7' height='7'/><rect x='320' y='80' width='7' height='7'/></g></svg>");}
+  .loc-card:nth-child(2)::before{background-position:center 0%,center;background-image:url('assets/altstetten.jpg'),url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 128' preserveAspectRatio='xMidYMid slice'><rect width='400' height='128' fill='%23c8272b'/><g stroke='%23ffffff' stroke-opacity='.85' stroke-width='3' fill='none'><path d='M-10 110 L410 70'/><path d='M-10 124 L410 84'/><path d='M60 128 L120 62 M140 128 L180 66 M220 128 L240 70 M300 128 L300 74'/></g><circle cx='320' cy='36' r='22' fill='%23f0f2f1' opacity='.9'/></svg>");}
+  .loc-card:nth-child(3)::before{background-position:center,center;background-image:url('assets/sattel.jpg'),url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 128' preserveAspectRatio='xMidYMid slice'><defs><linearGradient id='s' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='%234a6470'/><stop offset='1' stop-color='%23b9c7c9'/></linearGradient></defs><rect width='400' height='128' fill='url(%23s)'/><path d='M-10 128 L90 36 L140 84 L220 22 L320 110 L360 70 L410 128 Z' fill='%232c3a42'/><path d='M220 22 L196 52 L214 46 L224 58 L238 44 L252 52 Z' fill='%23f0f2f1'/><path d='M90 36 L74 56 L88 52 L98 62 L108 50 Z' fill='%23f0f2f1'/><path d='M0 46 L400 92' stroke='%23c8272b' stroke-width='2'/><rect x='170' y='62' width='14' height='10' rx='2' fill='%23c8272b'/></svg>");}
+  .loc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px;}
+  .loc-name{font-size:18px;font-weight:700;font-family:'Space Grotesk',sans-serif;line-height:1.2;}
+  .badge{font-size:11px;font-weight:600;padding:5px 10px;border-radius:999px;white-space:nowrap;flex:none;font-family:'IBM Plex Mono',monospace;}
+  .badge.open{background:var(--green-bg);color:#245038;}
+  .badge.closed{background:var(--off-bg);color:#4d545a;}
+  .loc-addr{font-size:14px;color:#5a6168;margin-bottom:14px;}
+  .loc-note{font-size:12.5px;color:var(--off);margin-bottom:12px;}
+  .loc-hours{font-size:13px;color:#5a6168;border-top:1px solid var(--line);padding-top:12px;margin-bottom:18px;}
+  .loc-hours div{display:flex;justify-content:space-between;padding:3px 0;}
+  .loc-actions{display:flex;gap:8px;margin-top:auto;}
+  .loc-actions .btn{font-size:13px;padding:11px 14px;flex:1;}
+
+  /* idea 3 */
+  .process{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:64px;counter-reset:s;}
+  @media (max-width:900px){.process{grid-template-columns:1fr 1fr;}}
+  @media (max-width:520px){.process{grid-template-columns:1fr;}}
+  .p-step{background:var(--white);border-radius:18px;padding:26px 22px 24px;position:relative;box-shadow:0 0 0 1px var(--line);transition:transform .2s ease;}
+  .p-step:hover{transform:translateY(-3px);}
+  .p-step::after{content:'';position:absolute;left:22px;top:0;width:36px;height:4px;background:var(--red);border-radius:0 0 4px 4px;}
+  .p-num{font-family:'Space Grotesk',sans-serif;font-size:54px;font-weight:700;line-height:1;color:var(--bone);-webkit-text-stroke:1.5px var(--red);margin-bottom:14px;}
+  .p-step h3{font-size:16.5px;font-weight:700;margin-bottom:8px;}
+  .p-step p{font-size:13.5px;color:#5a6168;line-height:1.6;margin:0;}
+  .reviews-label{font-size:12px;color:var(--off);margin-bottom:16px;font-family:'IBM Plex Mono',monospace;}
+  .reviews{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  @media (max-width:900px){.reviews{grid-template-columns:1fr;}}
+  .review{background:var(--ink);color:rgba(255,255,255,0.88);border-radius:18px;padding:24px;font-size:14.5px;line-height:1.6;}
+  .review .stars{color:#e0b457;font-size:15px;margin-bottom:12px;letter-spacing:2px;}
+  .review .who{margin-top:14px;font-size:12.5px;color:rgba(255,255,255,0.5);}
+
+  footer{background:var(--ink);color:rgba(255,255,255,0.7);padding:36px 0 48px;font-size:13px;}
+  footer a{color:#fff;}
+  .footer-bar{border-top:1px solid rgba(255,255,255,0.12);padding-top:24px;line-height:1.6;}
+
+  /* reveal */
+  .reveal{opacity:0;transform:translateY(22px);transition:opacity .6s ease,transform .6s ease;}
+  .reveal.in{opacity:1;transform:none;}
+  @media (max-width:960px){.topnav{display:none;}}
+  @media (max-width:560px){.topbar-inner{padding:12px 18px;}.wrap{padding:0 20px;}section{padding:72px 0;}}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto;}*{transition:none !important;}.reveal{opacity:1;transform:none;}}
+</style>
+</head>
+<body>
+
+<div class="topbar" id="topbar">
+  <div class="topbar-inner">
+    <div class="brand-mark"><span class="dot"></span>VeloKliniK</div>
+    <div class="topnav">
+      <a href="#idee1" data-i18n="nav.idea1">Idee 1 · Service-Finder</a>
+      <a href="#idee2" data-i18n="nav.idea2">Idee 2 · Standorte live</a>
+      <a href="#idee3" data-i18n="nav.idea3">Idee 3 · Prozess</a>
+    </div>
+    <div class="top-right">
+      <div class="lang-switch" id="langSwitch" role="group" aria-label="Sprache wählen">
+        <button class="lang-btn active" data-lang="de" aria-pressed="true">DE</button>
+        <button class="lang-btn" data-lang="fr" aria-pressed="false">FR</button>
+        <button class="lang-btn" data-lang="it" aria-pressed="false">IT</button>
+        <button class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<header class="hero">
+  <!-- Ilustración vectorial del taller (se puede cubrir con una foto real en assets/hero.jpg) -->
+  <svg class="hero-scene" viewBox="0 0 1600 900" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">
+    <defs>
+      <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#23262a"/><stop offset="1" stop-color="#17191c"/>
+      </linearGradient>
+      <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#2a2d31"/><stop offset="1" stop-color="#0f1012"/>
+      </linearGradient>
+      <radialGradient id="glow" cx="0.5" cy="0" r="0.8">
+        <stop offset="0" stop-color="#ffd9a0" stop-opacity="0.55"/><stop offset="1" stop-color="#ffd9a0" stop-opacity="0"/>
+      </radialGradient>
+      <pattern id="peg" width="22" height="22" patternUnits="userSpaceOnUse">
+        <circle cx="11" cy="11" r="1.6" fill="#0d0e10"/>
+      </pattern>
+      <filter id="neon" x="-20%" y="-50%" width="140%" height="200%">
+        <feGaussianBlur stdDeviation="6" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <g id="wheel">
+        <circle r="148" fill="none" stroke="#0a0a0a" stroke-width="14"/>
+        <circle r="134" fill="none" stroke="#d4cdbc" stroke-width="4"/>
+        <g stroke="#8d8778" stroke-width="1.6">
+          <line x1="-134" y1="0" x2="134" y2="0"/>
+          <line x1="-134" y1="0" x2="134" y2="0" transform="rotate(30)"/>
+          <line x1="-134" y1="0" x2="134" y2="0" transform="rotate(60)"/>
+          <line x1="-134" y1="0" x2="134" y2="0" transform="rotate(90)"/>
+          <line x1="-134" y1="0" x2="134" y2="0" transform="rotate(120)"/>
+          <line x1="-134" y1="0" x2="134" y2="0" transform="rotate(150)"/>
+        </g>
+        <circle r="11" fill="#d4cdbc"/>
+      </g>
+    </defs>
+
+    <!-- pared y suelo -->
+    <rect width="1600" height="900" fill="url(#wall)"/>
+    <rect y="790" width="1600" height="110" fill="url(#floor)"/>
+    <rect y="788" width="1600" height="3" fill="#000" opacity="0.5"/>
+    <!-- ladrillo sutil -->
+    <g stroke="#ffffff" stroke-opacity="0.035" stroke-width="2">
+      <path d="M0 120H1600M0 240H1600M0 360H1600M0 480H1600M0 600H1600M0 720H1600"/>
+    </g>
+
+    <!-- luces colgantes -->
+    <rect width="1600" height="500" fill="url(#glow)" opacity="0.35"/>
+    <g>
+      <line x1="880" y1="0" x2="880" y2="92" stroke="#0a0a0a" stroke-width="3"/>
+      <path d="M840 124 L860 92 H900 L920 124 Z" fill="#c8272b"/>
+      <ellipse cx="880" cy="126" rx="26" ry="6" fill="#ffe3b0"/>
+      <ellipse cx="880" cy="320" rx="190" ry="220" fill="#ffd9a0" opacity="0.07"/>
+      <line x1="1290" y1="0" x2="1290" y2="92" stroke="#0a0a0a" stroke-width="3"/>
+      <path d="M1250 124 L1270 92 H1310 L1330 124 Z" fill="#c8272b"/>
+      <ellipse cx="1290" cy="126" rx="26" ry="6" fill="#ffe3b0"/>
+      <ellipse cx="1290" cy="320" rx="190" ry="220" fill="#ffd9a0" opacity="0.07"/>
+    </g>
+
+    <!-- panel de herramientas -->
+    <g>
+      <rect x="720" y="170" width="380" height="240" rx="6" fill="#2d3034"/>
+      <rect x="720" y="170" width="380" height="240" rx="6" fill="url(#peg)"/>
+      <g fill="none" stroke="#e6dfcf" stroke-width="7" stroke-linecap="round">
+        <path d="M760 200 V340"/><circle cx="760" cy="196" r="12"/>
+        <path d="M806 210 V350"/><path d="M796 206 h20"/>
+        <path d="M850 200 V330"/><path d="M850 200 q-16 -8 -16 -22 M850 200 q16 -8 16 -22"/>
+      </g>
+      <g fill="none" stroke="#c8272b" stroke-width="8" stroke-linecap="round">
+        <path d="M910 205 L964 345"/><circle cx="906" cy="198" r="13"/>
+        <path d="M990 200 V300"/><rect x="978" y="300" width="24" height="52" rx="6"/>
+      </g>
+      <rect x="1030" y="200" width="40" height="150" rx="6" fill="none" stroke="#e6dfcf" stroke-width="5"/>
+      <g stroke="#e6dfcf" stroke-width="4"><path d="M1040 225h20M1040 255h20M1040 285h20M1040 315h20"/></g>
+    </g>
+
+    <!-- neón -->
+    <g filter="url(#neon)">
+      <text x="1160" y="236" font-family="Space Grotesk, sans-serif" font-weight="700" font-size="44" fill="none" stroke="#ff4a4f" stroke-width="2.2" letter-spacing="2">WE FIX BIKES!</text>
+    </g>
+
+    <!-- banco de trabajo -->
+    <g>
+      <rect x="700" y="610" width="360" height="16" rx="3" fill="#3d4247"/>
+      <rect x="716" y="626" width="12" height="164" fill="#0e0f11"/>
+      <rect x="1032" y="626" width="12" height="164" fill="#0e0f11"/>
+      <rect x="720" y="700" width="310" height="10" fill="#0e0f11"/>
+      <rect x="740" y="552" width="150" height="58" rx="5" fill="#c8272b"/>
+      <rect x="740" y="552" width="150" height="10" rx="3" fill="#8f1b1e"/>
+      <rect x="800" y="580" width="30" height="8" rx="3" fill="#f0f2f1"/>
+      <circle cx="960" cy="588" r="22" fill="none" stroke="#0a0a0a" stroke-width="10"/>
+      <circle cx="960" cy="588" r="12" fill="none" stroke="#d4cdbc" stroke-width="3"/>
+      <rect x="906" y="596" width="30" height="14" rx="3" fill="#e6dfcf"/>
+    </g>
+
+    <!-- sombra bajo la bici -->
+    <ellipse cx="1255" cy="796" rx="400" ry="18" fill="#000" opacity="0.45"/>
+
+    <!-- bicicleta -->
+    <use href="#wheel" transform="translate(1080 640)"/>
+    <use href="#wheel" transform="translate(1430 640)"/>
+    <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <g stroke="#c8272b" stroke-width="10">
+        <path d="M1080 640 L1210 660"/>
+        <path d="M1080 640 L1170 470"/>
+        <path d="M1210 660 L1170 470"/>
+        <path d="M1170 470 L1370 480"/>
+        <path d="M1210 660 L1370 480"/>
+        <path d="M1370 480 L1385 520"/>
+      </g>
+      <path d="M1385 520 L1430 640" stroke="#e6dfcf" stroke-width="9"/>
+      <path d="M1170 470 L1158 425" stroke="#e6dfcf" stroke-width="8"/>
+      <path d="M1120 418 H1200" stroke="#0a0a0a" stroke-width="14"/>
+      <path d="M1370 480 L1364 440" stroke="#e6dfcf" stroke-width="8"/>
+      <path d="M1364 440 H1408 Q1440 440 1440 474" stroke="#0a0a0a" stroke-width="9"/>
+      <circle cx="1210" cy="660" r="30" stroke="#e6dfcf" stroke-width="5"/>
+      <path d="M1210 660 L1238 716" stroke="#e6dfcf" stroke-width="8"/>
+      <rect x="1224" y="712" width="40" height="11" rx="3" fill="#0a0a0a" stroke="none"/>
+      <path d="M1080 640 L1210 640" stroke="#0a0a0a" stroke-width="4"/>
+    </g>
+  </svg>
+  <div class="hero-photo" aria-hidden="true"></div>
+  <div class="hero-shade" aria-hidden="true"></div>
+
+  <div class="wrap hero-content">
+    <div class="hero-tag" data-i18n="hero.tag">WERKSTATT-TICKET · PROTOTYP 2026</div>
+    <h1 data-i18n="hero.title">Wir verkaufen keine Velos.<br>Wir reparieren sie.</h1>
+    <p class="lead" data-i18n="hero.lead">Drei Standorte in Zürich und Schwyz, vier klare Servicepakete, Fixpreise.</p>
+    <div class="cta-row">
+      <a class="btn btn-primary" href="#idee1" data-i18n="hero.cta1">Service-Finder ausprobieren</a>
+      <a class="btn btn-ghost" href="https://velo-klinik.ch/services/" data-i18n="hero.cta2">Aktuelle Seite ansehen ↗</a>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="stat-v" data-i18n="extra.stat1v">3</div><div class="stat-l" data-i18n="extra.stat1l">Werkstätten</div></div>
+      <div class="stat"><div class="stat-v" data-i18n="extra.stat2v">4</div><div class="stat-l" data-i18n="extra.stat2l">Servicepakete</div></div>
+      <div class="stat"><div class="stat-v" data-i18n="extra.stat3v">ab CHF 79</div><div class="stat-l" data-i18n="extra.stat3l">Bronze Service</div></div>
+    </div>
+  </div>
+</header>
+
+<section id="idee1">
+  <div class="wrap split">
+    <div class="reveal">
+      <div class="eyebrow" data-i18n="idea1.eyebrow">Idee 1</div>
+      <h2 class="section-title" data-i18n="idea1.title">Welcher Service passt zu deinem Velo?</h2>
+      <p class="section-lead" data-i18n="idea1.lead">…</p>
+    </div>
+
+    <div id="wizardShell" class="wizard-shell reveal">
+      <div class="progress-dots">
+        <span class="dot-1 active"></span><span class="dot-2"></span><span class="dot-3"></span>
+      </div>
+
+      <div class="step" data-step="1">
+        <div class="q-title" data-i18n="idea1.q1">1. Wie nutzt du dein Velo hauptsächlich?</div>
+        <div class="opt-grid" data-group="usage">
+          <button class="opt" data-value="alltag" data-i18n="idea1.usage.alltag">Alltag / Pendeln</button>
+          <button class="opt" data-value="freizeit" data-i18n="idea1.usage.freizeit">Freizeit / Wochenende</button>
+          <button class="opt" data-value="sport" data-i18n="idea1.usage.sport">Sport / Training</button>
+        </div>
+        <div class="err" id="err1" style="display:none;" data-i18n="idea1.err">Bitte eine Option wählen.</div>
+        <div class="wizard-nav"><span></span><button class="btn btn-primary" id="next1" data-i18n="idea1.next">Weiter</button></div>
+      </div>
+
+      <div class="step" data-step="2" style="display:none;">
+        <div class="q-title" data-i18n="idea1.q2">2. Wann war der letzte Service?</div>
+        <div class="opt-grid" data-group="last">
+          <button class="opt" data-value="nie" data-i18n="idea1.last.nie">Noch nie</button>
+          <button class="opt" data-value="12plus" data-i18n="idea1.last.12plus">Vor über 12 Monaten</button>
+          <button class="opt" data-value="6-12" data-i18n="idea1.last.6-12">Vor 6–12 Monaten</button>
+          <button class="opt" data-value="unter6" data-i18n="idea1.last.unter6">Vor weniger als 6 Monaten</button>
+        </div>
+        <div class="err" id="err2" style="display:none;" data-i18n="idea1.err">Bitte eine Option wählen.</div>
+        <div class="wizard-nav"><button class="btn btn-outline" id="back2" data-i18n="idea1.back">Zurück</button><button class="btn btn-primary" id="next2" data-i18n="idea1.next">Weiter</button></div>
+      </div>
+
+      <div class="step" data-step="3" style="display:none;">
+        <div class="q-title" data-i18n="idea1.q3">3. Um was für ein Velo geht's?</div>
+        <div class="opt-grid" data-group="type">
+          <button class="opt" data-value="stadt" data-i18n="idea1.type.stadt">Stadt- / Bahnhofvelo</button>
+          <button class="opt" data-value="renn" data-i18n="idea1.type.renn">Rennrad</button>
+          <button class="opt" data-value="mtb" data-i18n="idea1.type.mtb">Mountainbike</button>
+          <button class="opt" data-value="ebike" data-i18n="idea1.type.ebike">eBike</button>
+        </div>
+        <div class="err" id="err3" style="display:none;" data-i18n="idea1.err">Bitte eine Option wählen.</div>
+        <div class="wizard-nav"><button class="btn btn-outline" id="back3" data-i18n="idea1.back">Zurück</button><button class="btn btn-primary" id="showResult" data-i18n="idea1.showResult">Empfehlung anzeigen</button></div>
+      </div>
+
+      <div class="step" data-step="result" style="display:none;">
+        <div id="ticketResult"></div>
+        <button class="reset-link" id="resetWizard" data-i18n="idea1.resetLink">Nochmals starten</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="idee2">
+  <div class="wrap">
+    <div class="reveal">
+      <div class="eyebrow" data-i18n="idea2.eyebrow">Idee 2</div>
+      <h2 class="section-title" data-i18n="idea2.title">Deine nächste Werkstatt</h2>
+      <p class="section-lead" data-i18n="idea2.lead">…</p>
+    </div>
+    <div class="loc-grid reveal" id="locGrid"></div>
+  </div>
+</section>
+
+<section id="idee3">
+  <div class="wrap">
+    <div class="reveal">
+      <div class="eyebrow" data-i18n="idea3.eyebrow">Idee 3</div>
+      <h2 class="section-title" data-i18n="idea3.title">Was passiert mit deinem Velo?</h2>
+      <p class="section-lead" data-i18n="idea3.lead">…</p>
+    </div>
+    <div class="process reveal" id="processGrid"></div>
+    <div class="reviews-label" data-i18n="idea3.reviewsLabel">BEISPIEL</div>
+    <div class="reviews reveal" id="reviewsGrid"></div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-bar" id="footerBar"></div>
+  </div>
+</footer>
+
+<script>
+var I18N = {
+  de: {
+    nav: { idea1:`Idee 1 · Service-Finder`, idea2:`Idee 2 · Standorte live`, idea3:`Idee 3 · Prozess`, notes:`Design-Notizen`, notesAria:`Design-Notizen ein- oder ausblenden` },
+    hero: {
+      tag:`WERKSTATT-TICKET · PROTOTYP 2026`,
+      title:`Wir verkaufen keine Velos.<br>Wir reparieren sie.`,
+      lead:`Drei Standorte in Zürich und Schwyz, vier klare Servicepakete, Fixpreise. Dieser Prototyp zeigt drei konkrete Verbesserungen für die bestehende Seite — direkt ausprobierbar.`,
+      cta1:`Service-Finder ausprobieren`,
+      cta2:`Aktuelle Seite ansehen ↗`,
+      note:`<b>Für die Präsentation:</b> Diese Startseite behält bewusst Ton und Struktur der bestehenden Seite bei — die drei Ideen unten sind Ergänzungen, kein Rebrand. So lässt sich der Nutzen isoliert diskutieren.`
+    },
+    idea1: {
+      eyebrow:`Idee 1 — Interaktiver Service-Finder`,
+      title:`Welcher Service passt zu deinem Velo?`,
+      lead:`Statt vier Servicepakete selbst zu vergleichen, beantwortet der Kunde drei kurze Fragen und erhält direkt eine Empfehlung mit Preis — als „Diagnose-Ticket", passend zum Werkstatt-Charakter der Marke.`,
+      q1:`1. Wie nutzt du dein Velo hauptsächlich?`,
+      usage:{ alltag:`Alltag / Pendeln`, freizeit:`Freizeit / Wochenende`, sport:`Sport / Training` },
+      err:`Bitte eine Option wählen.`,
+      next:`Weiter`, back:`Zurück`,
+      q2:`2. Wann war der letzte Service?`,
+      last:{ nie:`Noch nie`, "12plus":`Vor über 12 Monaten`, "6-12":`Vor 6–12 Monaten`, unter6:`Vor weniger als 6 Monaten` },
+      q3:`3. Um was für ein Velo geht's?`,
+      type:{ stadt:`Stadt- / Bahnhofvelo`, renn:`Rennrad`, mtb:`Mountainbike`, ebike:`eBike` },
+      showResult:`Empfehlung anzeigen`,
+      ticketNr:`TICKET NR.`,
+      bookBtn:`Termin für {pkg} buchen`,
+      compareBtn:`Alle Pakete vergleichen ↗`,
+      resetLink:`Nochmals starten`,
+      note:`<b>Warum das hilft:</b> Kunden ohne Fachwissen wissen heute oft nicht, ob sie Silver oder Gold brauchen — das kostet Buchungen. Eine geführte Empfehlung senkt die Entscheidungshürde und führt direkt zum passenden Preis, statt vier Tabellen nebeneinander zu vergleichen.`
+    },
+    packages: {
+      bronze:{ name:`Bronze Service`, price:`CHF 79.–`, items:[`Schaltung & Bremsen einstellen`,`Kette schmieren`,`Reifendruck kontrollieren`] },
+      silver:{ name:`Silver Service`, price:`CHF 119.–`, items:[`Schaltung & Bremsen einstellen`,`Laufräder zentrieren`,`Generalinspektion des Fahrrades`] },
+      gold:{ name:`Gold Service`, price:`CHF 199.–`, items:[`Alles aus Silver`,`Komplettes Entfetten des Antriebsstrangs`,`Kugellager prüfen und einstellen`] },
+      platinum:{ name:`Platinum Service`, price:`CHF 349.–`, items:[`Alles aus Gold`,`Demontage & Montage aller Komponenten`,`Schmierung aller Teile`] }
+    },
+    idea2: {
+      eyebrow:`Idee 2 — Standort-Finder in Echtzeit`,
+      title:`Deine nächste Werkstatt — und ob sie gerade offen hat`,
+      lead:`Live-Status statt reiner Adressliste: sofort sichtbar, welcher Standort jetzt geöffnet ist, mit direktem Weg zur Route oder zur Terminbuchung.`,
+      route:`Route`, book:`Termin`,
+      statusOpen:`Jetzt geöffnet · bis {time}`,
+      statusClosedOpens:`Geschlossen · öffnet {time}`,
+      statusClosedToday:`Heute geschlossen`,
+      closedWord:`geschlossen`,
+      note:`<b>Warum das hilft:</b> Viele Kunden entscheiden spontan, unterwegs, ob sie vorbeigehen. Ein Live-Status (echte Uhrzeit im Browser) verhindert vergebliche Wege und macht die drei Standorte auf einen Blick vergleichbar, statt drei gleich aussehende Google-Maps-Boxen zu haben.`
+    },
+    locations: {
+      europaallee:{ name:`Europaallee, Zürich HB`, addr:`Lagerstrasse 104, 8004 Zürich` },
+      altstetten:{ name:`Altstetten, Zürich`, addr:`Herostrasse 7, 8048 Zürich` },
+      sattel:{ name:`Sattel, Schwyz`, addr:`Kreisel 2, 6417 Schwyz — Sattel-Hochstuckli Gondelbahn`, note:`Nur an Wochenenden, Sommersaison` }
+    },
+    dayLabels: { "mo-fri":`Mo–Fr`, sa:`Sa`, so:`So`, "fr-so":`Fr–So`, "mo-do":`Mo–Do` },
+    idea3: {
+      eyebrow:`Idee 3 — Prozess & Vertrauen`,
+      title:`Was passiert mit deinem Velo?`,
+      lead:`Ein kurzer, klarer Ablauf nimmt die Unsicherheit, das eigene Velo abzugeben — ergänzt um Bewertungen als sozialen Beweis, bevor gebucht wird.`,
+      steps:[
+        { title:`Abgabe & Diagnose-Ticket`, desc:`Velo abgeben, kurzer Check vor Ort, du erhältst ein Ticket mit Nummer.` },
+        { title:`Kostenvoranschlag`, desc:`Bei Zusatzarbeiten meldet sich die Werkstatt per SMS oder WhatsApp — keine Überraschungen.` },
+        { title:`Reparatur`, desc:`Dein Velo wird von geprüften Mechanikern nach Fixpreis-Paket bearbeitet.` },
+        { title:`Abholung & Testfahrt`, desc:`Kurze Testfahrt vor Ort, damit du dein Velo zufrieden mitnimmst.` }
+      ],
+      reviewsLabel:`BEISPIEL — mit echten Google-Bewertungen ersetzen`,
+      reviews:[
+        { text:`Ich wusste vorher nie, welchen Service ich brauche — diesmal war es in 2 Minuten klar.`, who:`— Beispiel, Zürich`, stars:5 },
+        { text:`Kurz angerufen ob offen, dann direkt vorbeigegangen. Velo war noch am selben Tag fertig.`, who:`— Beispiel, Zürich`, stars:5 },
+        { text:`Der Ablauf mit dem Ticket und der WhatsApp-Nachricht hat mir Sicherheit gegeben.`, who:`— Beispiel, Schwyz`, stars:4 }
+      ],
+      note:`<b>Warum das hilft:</b> Ein sichtbarer Prozess reduziert die „was passiert jetzt mit meinem teuren Velo"-Unsicherheit bei Erstkunden. Echte Bewertungen sind einer der stärksten Hebel für Vertrauen vor der ersten Buchung.`
+    },
+    footer:`Prototyp zur Präsentation · Inhalte, Preise und Adressen basieren auf <a href="https://velo-klinik.ch">velo-klinik.ch</a> (Stand August 2026). Öffnungszeiten sind Platzhalter.`
+  },
+  fr: {
+    nav: { idea1:`Idée 1 · Aide au choix`, idea2:`Idée 2 · Ateliers en direct`, idea3:`Idée 3 · Processus`, notes:`Notes de conception`, notesAria:`Afficher ou masquer les notes de conception` },
+    hero: {
+      tag:`TICKET D'ATELIER · PROTOTYPE 2026`,
+      title:`Nous ne vendons pas de vélos.<br>Nous les réparons.`,
+      lead:`Trois ateliers à Zurich et Schwyz, quatre forfaits clairs, des prix fixes. Ce prototype présente trois améliorations concrètes du site actuel — à tester directement.`,
+      cta1:`Essayer l'aide au choix`,
+      cta2:`Voir le site actuel ↗`,
+      note:`<b>Pour la présentation :</b> cette page d'accueil garde volontairement le ton et la structure du site actuel — les trois idées ci-dessous sont des ajouts, pas une refonte de marque. Cela permet de discuter de chaque bénéfice séparément.`
+    },
+    idea1: {
+      eyebrow:`Idée 1 — Aide au choix interactive`,
+      title:`Quel service convient à ton vélo ?`,
+      lead:`Plutôt que de comparer quatre forfaits soi-même, le client répond à trois questions rapides et reçoit directement une recommandation avec le prix — sous forme de « ticket de diagnostic », dans l'esprit atelier de la marque.`,
+      q1:`1. Comment utilises-tu ton vélo principalement ?`,
+      usage:{ alltag:`Quotidien / trajets`, freizeit:`Loisirs / week-end`, sport:`Sport / entraînement` },
+      err:`Merci de choisir une option.`,
+      next:`Suivant`, back:`Retour`,
+      q2:`2. Quand a eu lieu le dernier service ?`,
+      last:{ nie:`Jamais`, "12plus":`Il y a plus de 12 mois`, "6-12":`Il y a 6 à 12 mois`, unter6:`Il y a moins de 6 mois` },
+      q3:`3. De quel type de vélo s'agit-il ?`,
+      type:{ stadt:`Vélo de ville / de gare`, renn:`Vélo de course`, mtb:`VTT`, ebike:`Vélo électrique` },
+      showResult:`Afficher la recommandation`,
+      ticketNr:`TICKET N°`,
+      bookBtn:`Réserver le {pkg}`,
+      compareBtn:`Comparer tous les forfaits ↗`,
+      resetLink:`Recommencer`,
+      note:`<b>Pourquoi c'est utile :</b> les clients non spécialistes ne savent souvent pas s'ils ont besoin du forfait Silver ou Gold — cela coûte des réservations. Une recommandation guidée réduit l'hésitation et mène directement au bon prix, plutôt que de comparer quatre tableaux.`
+    },
+    packages: {
+      bronze:{ name:`Forfait Bronze`, price:`CHF 79.–`, items:[`Réglage dérailleur et freins`,`Graissage de la chaîne`,`Contrôle de la pression des pneus`] },
+      silver:{ name:`Forfait Silver`, price:`CHF 119.–`, items:[`Réglage dérailleur et freins`,`Centrage des roues`,`Inspection générale du vélo`] },
+      gold:{ name:`Forfait Gold`, price:`CHF 199.–`, items:[`Tout le forfait Silver`,`Dégraissage complet de la transmission`,`Contrôle et réglage des roulements`] },
+      platinum:{ name:`Forfait Platinum`, price:`CHF 349.–`, items:[`Tout le forfait Gold`,`Démontage et remontage de tous les composants`,`Graissage de toutes les pièces`] }
+    },
+    idea2: {
+      eyebrow:`Idée 2 — Localisation des ateliers en direct`,
+      title:`Ton atelier le plus proche — et s'il est ouvert maintenant`,
+      lead:`Un statut en direct plutôt qu'une simple liste d'adresses : on voit tout de suite quel atelier est ouvert, avec un accès direct à l'itinéraire ou à la réservation.`,
+      route:`Itinéraire`, book:`Réserver`,
+      statusOpen:`Ouvert maintenant · jusqu'à {time}`,
+      statusClosedOpens:`Fermé · ouvre à {time}`,
+      statusClosedToday:`Fermé aujourd'hui`,
+      closedWord:`fermé`,
+      note:`<b>Pourquoi c'est utile :</b> beaucoup de clients décident spontanément, en déplacement, de passer ou non. Un statut en direct (heure réelle du navigateur) évite les trajets inutiles et rend les trois ateliers comparables en un coup d'œil, plutôt que trois blocs Google Maps identiques.`
+    },
+    locations: {
+      europaallee:{ name:`Europaallee, gare centrale de Zurich`, addr:`Lagerstrasse 104, 8004 Zurich` },
+      altstetten:{ name:`Altstetten, Zurich`, addr:`Herostrasse 7, 8048 Zurich` },
+      sattel:{ name:`Sattel, Schwyz`, addr:`Kreisel 2, 6417 Schwyz — télécabine Sattel-Hochstuckli`, note:`Uniquement le week-end, saison d'été` }
+    },
+    dayLabels: { "mo-fri":`Lu–Ve`, sa:`Sa`, so:`Di`, "fr-so":`Ve–Di`, "mo-do":`Lu–Je` },
+    idea3: {
+      eyebrow:`Idée 3 — Processus et confiance`,
+      title:`Que devient ton vélo ?`,
+      lead:`Un déroulé court et clair lève l'incertitude de confier son vélo — complété par des avis clients comme preuve sociale avant de réserver.`,
+      steps:[
+        { title:`Dépôt et ticket de diagnostic`, desc:`Tu déposes ton vélo, un rapide contrôle est fait sur place, tu reçois un ticket numéroté.` },
+        { title:`Devis`, desc:`En cas de travaux supplémentaires, l'atelier te contacte par SMS ou WhatsApp — aucune surprise.` },
+        { title:`Réparation`, desc:`Ton vélo est pris en charge par des mécaniciens qualifiés selon le forfait à prix fixe.` },
+        { title:`Retrait et essai`, desc:`Un court essai sur place pour que tu reprennes ton vélo satisfait.` }
+      ],
+      reviewsLabel:`EXEMPLE — à remplacer par de vrais avis Google`,
+      reviews:[
+        { text:`Je ne savais jamais quel service choisir — cette fois, tout était clair en 2 minutes.`, who:`— Exemple, Zurich`, stars:5 },
+        { text:`J'ai appelé pour savoir si c'était ouvert, puis je suis passé directement. Le vélo était prêt le jour même.`, who:`— Exemple, Zurich`, stars:5 },
+        { text:`Le déroulé avec le ticket et le message WhatsApp m'a rassuré.`, who:`— Exemple, Schwyz`, stars:4 }
+      ],
+      note:`<b>Pourquoi c'est utile :</b> un processus visible réduit l'incertitude « que va-t-il arriver à mon vélo » chez les nouveaux clients. De vrais avis sont l'un des leviers de confiance les plus efficaces avant une première réservation.`
+    },
+    footer:`Prototype de présentation · Contenus, prix et adresses basés sur <a href="https://velo-klinik.ch">velo-klinik.ch</a> (août 2026). Les horaires sont indicatifs.`
+  },
+  it: {
+    nav: { idea1:`Idea 1 · Trova il servizio`, idea2:`Idea 2 · Sedi in tempo reale`, idea3:`Idea 3 · Processo`, notes:`Note di design`, notesAria:`Mostra o nascondi le note di design` },
+    hero: {
+      tag:`TICKET OFFICINA · PROTOTIPO 2026`,
+      title:`Non vendiamo biciclette.<br>Le ripariamo.`,
+      lead:`Tre sedi tra Zurigo e Svitto, quattro pacchetti di servizio chiari, prezzi fissi. Questo prototipo mostra tre miglioramenti concreti al sito esistente — provabili subito.`,
+      cta1:`Prova il trova-servizio`,
+      cta2:`Vedi il sito attuale ↗`,
+      note:`<b>Per la presentazione:</b> questa home page mantiene volutamente tono e struttura del sito esistente — le tre idee qui sotto sono aggiunte, non un rebranding. Così si può discutere ogni beneficio separatamente.`
+    },
+    idea1: {
+      eyebrow:`Idea 1 — Trova-servizio interattivo`,
+      title:`Quale servizio è adatto alla tua bici?`,
+      lead:`Invece di confrontare da soli quattro pacchetti, il cliente risponde a tre brevi domande e riceve subito un consiglio con il prezzo — sotto forma di «ticket di diagnosi», coerente con lo spirito da officina del marchio.`,
+      q1:`1. Come usi principalmente la tua bici?`,
+      usage:{ alltag:`Tutti i giorni / pendolarismo`, freizeit:`Tempo libero / weekend`, sport:`Sport / allenamento` },
+      err:`Seleziona un'opzione.`,
+      next:`Avanti`, back:`Indietro`,
+      q2:`2. Quando è stata l'ultima revisione?`,
+      last:{ nie:`Mai`, "12plus":`Più di 12 mesi fa`, "6-12":`6–12 mesi fa`, unter6:`Meno di 6 mesi fa` },
+      q3:`3. Di che tipo di bici si tratta?`,
+      type:{ stadt:`Bici da città / da stazione`, renn:`Bici da corsa`, mtb:`Mountain bike`, ebike:`eBike` },
+      showResult:`Mostra il consiglio`,
+      ticketNr:`TICKET N.`,
+      bookBtn:`Prenota il {pkg}`,
+      compareBtn:`Confronta tutti i pacchetti ↗`,
+      resetLink:`Ricomincia`,
+      note:`<b>Perché aiuta:</b> i clienti senza competenze tecniche spesso non sanno se serve il pacchetto Silver o Gold — questo costa prenotazioni. Un consiglio guidato riduce l'incertezza e porta direttamente al prezzo giusto, invece di confrontare quattro tabelle.`
+    },
+    packages: {
+      bronze:{ name:`Servizio Bronze`, price:`CHF 79.–`, items:[`Regolazione cambio e freni`,`Lubrificazione catena`,`Controllo pressione pneumatici`] },
+      silver:{ name:`Servizio Silver`, price:`CHF 119.–`, items:[`Regolazione cambio e freni`,`Centratura ruote`,`Ispezione generale della bici`] },
+      gold:{ name:`Servizio Gold`, price:`CHF 199.–`, items:[`Tutto il Silver`,`Sgrassaggio completo della trasmissione`,`Controllo e regolazione dei cuscinetti`] },
+      platinum:{ name:`Servizio Platinum`, price:`CHF 349.–`, items:[`Tutto il Gold`,`Smontaggio e rimontaggio di tutti i componenti`,`Lubrificazione di tutte le parti`] }
+    },
+    idea2: {
+      eyebrow:`Idea 2 — Sedi in tempo reale`,
+      title:`La tua officina più vicina — ed è aperta ora?`,
+      lead:`Uno stato in tempo reale invece di un semplice elenco di indirizzi: si vede subito quale sede è aperta, con accesso diretto al percorso o alla prenotazione.`,
+      route:`Percorso`, book:`Prenota`,
+      statusOpen:`Aperto ora · fino alle {time}`,
+      statusClosedOpens:`Chiuso · apre alle {time}`,
+      statusClosedToday:`Oggi chiuso`,
+      closedWord:`chiuso`,
+      note:`<b>Perché aiuta:</b> molti clienti decidono spontaneamente, in movimento, se passare o meno. Uno stato in tempo reale (ora reale del browser) evita spostamenti inutili e rende le tre sedi confrontabili a colpo d'occhio, invece di tre riquadri Google Maps identici.`
+    },
+    locations: {
+      europaallee:{ name:`Europaallee, Zurigo HB`, addr:`Lagerstrasse 104, 8004 Zurigo` },
+      altstetten:{ name:`Altstetten, Zurigo`, addr:`Herostrasse 7, 8048 Zurigo` },
+      sattel:{ name:`Sattel, Svitto`, addr:`Kreisel 2, 6417 Svitto — funivia Sattel-Hochstuckli`, note:`Solo nei weekend, stagione estiva` }
+    },
+    dayLabels: { "mo-fri":`Lu–Ve`, sa:`Sa`, so:`Do`, "fr-so":`Ve–Do`, "mo-do":`Lu–Gio` },
+    idea3: {
+      eyebrow:`Idea 3 — Processo e fiducia`,
+      title:`Cosa succede alla tua bici?`,
+      lead:`Un percorso breve e chiaro riduce l'incertezza di lasciare la propria bici — completato da recensioni come prova sociale prima della prenotazione.`,
+      steps:[
+        { title:`Consegna e ticket di diagnosi`, desc:`Consegni la bici, un rapido controllo sul posto, ricevi un ticket numerato.` },
+        { title:`Preventivo`, desc:`In caso di lavori aggiuntivi, l'officina ti contatta via SMS o WhatsApp — nessuna sorpresa.` },
+        { title:`Riparazione`, desc:`La tua bici viene lavorata da meccanici qualificati secondo il pacchetto a prezzo fisso.` },
+        { title:`Ritiro e prova`, desc:`Un breve giro di prova sul posto, così ritiri la bici soddisfatto.` }
+      ],
+      reviewsLabel:`ESEMPIO — da sostituire con vere recensioni Google`,
+      reviews:[
+        { text:`Prima non sapevo mai quale servizio scegliere — questa volta era chiaro in 2 minuti.`, who:`— Esempio, Zurigo`, stars:5 },
+        { text:`Ho chiamato per sapere se erano aperti, poi sono passato direttamente. La bici era pronta lo stesso giorno.`, who:`— Esempio, Zurigo`, stars:5 },
+        { text:`Il percorso con il ticket e il messaggio WhatsApp mi ha dato sicurezza.`, who:`— Esempio, Svitto`, stars:4 }
+      ],
+      note:`<b>Perché aiuta:</b> un processo visibile riduce l'incertezza «cosa succede ora alla mia bici» nei nuovi clienti. Recensioni vere sono una delle leve di fiducia più forti prima di una prima prenotazione.`
+    },
+    footer:`Prototipo di presentazione · Contenuti, prezzi e indirizzi basati su <a href="https://velo-klinik.ch">velo-klinik.ch</a> (agosto 2026). Gli orari sono indicativi.`
+  },
+  en: {
+    nav: { idea1:`Idea 1 · Service finder`, idea2:`Idea 2 · Live locations`, idea3:`Idea 3 · Process`, notes:`Design notes`, notesAria:`Show or hide design notes` },
+    hero: {
+      tag:`WORKSHOP TICKET · PROTOTYPE 2026`,
+      title:`We don't sell bikes.<br>We fix them.`,
+      lead:`Three locations across Zurich and Schwyz, four clear service packages, fixed prices. This prototype shows three concrete improvements to the existing site — ready to try right now.`,
+      cta1:`Try the service finder`,
+      cta2:`View the current site ↗`,
+      note:`<b>For the presentation:</b> this homepage deliberately keeps the tone and structure of the existing site — the three ideas below are additions, not a rebrand. That makes it easier to discuss each benefit on its own.`
+    },
+    idea1: {
+      eyebrow:`Idea 1 — Interactive service finder`,
+      title:`Which service fits your bike?`,
+      lead:`Instead of comparing four service packages alone, the customer answers three short questions and gets a recommendation with a price right away — presented as a "diagnosis ticket" that fits the workshop character of the brand.`,
+      q1:`1. How do you mainly use your bike?`,
+      usage:{ alltag:`Everyday / commuting`, freizeit:`Leisure / weekends`, sport:`Sport / training` },
+      err:`Please choose an option.`,
+      next:`Next`, back:`Back`,
+      q2:`2. When was the last service?`,
+      last:{ nie:`Never`, "12plus":`More than 12 months ago`, "6-12":`6–12 months ago`, unter6:`Less than 6 months ago` },
+      q3:`3. What kind of bike is it?`,
+      type:{ stadt:`City / commuter bike`, renn:`Road bike`, mtb:`Mountain bike`, ebike:`eBike` },
+      showResult:`Show recommendation`,
+      ticketNr:`TICKET NO.`,
+      bookBtn:`Book the {pkg}`,
+      compareBtn:`Compare all packages ↗`,
+      resetLink:`Start over`,
+      note:`<b>Why this helps:</b> customers without technical know-how often don't know whether they need Silver or Gold — that costs bookings. A guided recommendation lowers the decision barrier and leads straight to the right price, instead of comparing four tables side by side.`
+    },
+    packages: {
+      bronze:{ name:`Bronze service`, price:`CHF 79.–`, items:[`Gear and brake adjustment`,`Chain lubrication`,`Tyre pressure check`] },
+      silver:{ name:`Silver service`, price:`CHF 119.–`, items:[`Gear and brake adjustment`,`Wheel truing`,`General bike inspection`] },
+      gold:{ name:`Gold service`, price:`CHF 199.–`, items:[`Everything in Silver`,`Full drivetrain degreasing`,`Bearing check and adjustment`] },
+      platinum:{ name:`Platinum service`, price:`CHF 349.–`, items:[`Everything in Gold`,`Full disassembly and reassembly of all parts`,`Lubrication of every part`] }
+    },
+    idea2: {
+      eyebrow:`Idea 2 — Real-time location finder`,
+      title:`Your nearest workshop — and whether it's open right now`,
+      lead:`A live status instead of a plain address list: instantly see which location is open now, with a direct link to directions or booking.`,
+      route:`Directions`, book:`Book`,
+      statusOpen:`Open now · until {time}`,
+      statusClosedOpens:`Closed · opens {time}`,
+      statusClosedToday:`Closed today`,
+      closedWord:`closed`,
+      note:`<b>Why this helps:</b> many customers decide on the spot, while out and about, whether to stop by. A live status (using the real browser time) prevents wasted trips and makes the three locations comparable at a glance, instead of three identical-looking Google Maps boxes.`
+    },
+    locations: {
+      europaallee:{ name:`Europaallee, Zurich HB`, addr:`Lagerstrasse 104, 8004 Zurich` },
+      altstetten:{ name:`Altstetten, Zurich`, addr:`Herostrasse 7, 8048 Zurich` },
+      sattel:{ name:`Sattel, Schwyz`, addr:`Kreisel 2, 6417 Schwyz — Sattel-Hochstuckli cable car`, note:`Weekends only, summer season` }
+    },
+    dayLabels: { "mo-fri":`Mon–Fri`, sa:`Sat`, so:`Sun`, "fr-so":`Fri–Sun`, "mo-do":`Mon–Thu` },
+    idea3: {
+      eyebrow:`Idea 3 — Process and trust`,
+      title:`What happens to your bike?`,
+      lead:`A short, clear process removes the uncertainty of dropping off your bike — backed up by reviews as social proof before booking.`,
+      steps:[
+        { title:`Drop-off and diagnosis ticket`, desc:`Drop off your bike, a quick check on the spot, you get a numbered ticket.` },
+        { title:`Cost estimate`, desc:`For any extra work, the workshop reaches out by SMS or WhatsApp — no surprises.` },
+        { title:`Repair`, desc:`Your bike is handled by certified mechanics according to the fixed-price package.` },
+        { title:`Pick-up and test ride`, desc:`A short test ride on the spot, so you leave with a bike you're happy with.` }
+      ],
+      reviewsLabel:`EXAMPLE — replace with real Google reviews`,
+      reviews:[
+        { text:`I never used to know which service I needed — this time it was clear in 2 minutes.`, who:`— Example, Zurich`, stars:5 },
+        { text:`Called to check if they were open, then went straight over. The bike was ready the same day.`, who:`— Example, Zurich`, stars:5 },
+        { text:`The ticket and WhatsApp update gave me peace of mind.`, who:`— Example, Schwyz`, stars:4 }
+      ],
+      note:`<b>Why this helps:</b> a visible process reduces the "what happens to my expensive bike now" uncertainty for first-time customers. Real reviews are one of the strongest trust levers before a first booking.`
+    },
+    footer:`Presentation prototype · Content, prices and addresses based on <a href="https://velo-klinik.ch">velo-klinik.ch</a> (as of August 2026). Opening hours are placeholders.`
+  }
+};
+
+var LOCATION_ORDER = ['europaallee','altstetten','sattel'];
+var LOCATIONS_HOURS = {
+  europaallee: [
+    { days:[1,2,3,4,5], open:'08:00', close:'18:30', labelKey:'mo-fri' },
+    { days:[6], open:'09:00', close:'16:00', labelKey:'sa' },
+    { days:[0], labelKey:'so', closed:true }
+  ],
+  altstetten: [
+    { days:[1,2,3,4,5], open:'08:00', close:'18:00', labelKey:'mo-fri' },
+    { days:[6], open:'09:00', close:'14:00', labelKey:'sa' },
+    { days:[0], labelKey:'so', closed:true }
+  ],
+  sattel: [
+    { days:[5,6,0], open:'09:00', close:'17:00', labelKey:'fr-so' },
+    { days:[1,2,3,4], labelKey:'mo-do', closed:true }
+  ]
+};
+var LOCATION_MAPS = {
+  europaallee:'https://maps.google.com/maps?q=Lagerstrasse+104,+8004+Zurich',
+  altstetten:'https://maps.google.com/maps?q=Herostrasse+7,+8048+Zurich',
+  sattel:'https://maps.google.com/maps?q=Kreisel+2,+6417+Schwyz'
+};
+
+var currentLang = 'de';
+var lastRecommendedKey = null;
+var lastTicketNum = null;
+
+function tr(lang, path){
+  return path.split('.').reduce(function(o,k){ return (o && o[k] !== undefined) ? o[k] : undefined; }, I18N[lang]);
+}
+
+function applyStaticTranslations(){
+  document.querySelectorAll('[data-i18n]').forEach(function(el){
+    var val = tr(currentLang, el.getAttribute('data-i18n'));
+    if(val !== undefined) el.innerHTML = val;
+  });
+}
+
+function statusFor(hoursArr, idea2i18n){
+  var now = new Date();
+  var day = now.getDay();
+  var minutesNow = now.getHours() * 60 + now.getMinutes();
+  for(var i = 0; i < hoursArr.length; i++){
+    var h = hoursArr[i];
+    if(h.days.indexOf(day) !== -1 && !h.closed){
+      var oParts = h.open.split(':'), cParts = h.close.split(':');
+      var openMin = parseInt(oParts[0]) * 60 + parseInt(oParts[1]);
+      var closeMin = parseInt(cParts[0]) * 60 + parseInt(cParts[1]);
+      if(minutesNow >= openMin && minutesNow < closeMin){
+        return { open:true, text: idea2i18n.statusOpen.replace('{time}', h.close) };
+      } else if(minutesNow < openMin){
+        return { open:false, text: idea2i18n.statusClosedOpens.replace('{time}', h.open) };
+      }
+    }
+  }
+  return { open:false, text: idea2i18n.statusClosedToday };
+}
+
+function renderLocations(){
+  var idea2 = I18N[currentLang].idea2;
+  var locs = I18N[currentLang].locations;
+  var dayLabels = I18N[currentLang].dayLabels;
+  var grid = document.getElementById('locGrid');
+  grid.innerHTML = LOCATION_ORDER.map(function(id){
+    var loc = locs[id];
+    var hoursArr = LOCATIONS_HOURS[id];
+    var st = statusFor(hoursArr, idea2);
+    var hoursHtml = hoursArr.map(function(h){
+      var right = h.closed ? idea2.closedWord : (h.open + '–' + h.close);
+      return '<div><span>' + dayLabels[h.labelKey] + '</span><span>' + right + '</span></div>';
+    }).join('');
+    return ''
+      + '<div class="loc-card">'
+      + '<div class="loc-top"><div class="loc-name">' + loc.name + '</div>'
+      + '<span class="badge ' + (st.open ? 'open' : 'closed') + '">' + st.text + '</span></div>'
+      + '<div class="loc-addr">' + loc.addr + '</div>'
+      + (loc.note ? '<div class="loc-note">' + loc.note + '</div>' : '')
+      + '<div class="loc-hours">' + hoursHtml + '</div>'
+      + '<div class="loc-actions">'
+      + '<a class="btn btn-outline" href="' + LOCATION_MAPS[id] + '">' + idea2.route + '</a>'
+      + '<a class="btn btn-primary" href="https://velo-klinik.ch/online-terminbuchung/">' + idea2.book + '</a>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+function renderProcessAndReviews(){
+  var idea3 = I18N[currentLang].idea3;
+  var processEl = document.getElementById('processGrid');
+  processEl.innerHTML = idea3.steps.map(function(s, i){
+    return '<div class="p-step"><div class="p-num">0' + (i + 1) + '</div><h3>' + s.title + '</h3><p>' + s.desc + '</p></div>';
+  }).join('');
+
+  var reviewsEl = document.getElementById('reviewsGrid');
+  reviewsEl.innerHTML = idea3.reviews.map(function(r){
+    var stars = '★★★★★☆☆☆☆☆'.slice(5 - r.stars, 10 - r.stars);
+    return '<div class="review"><div class="stars">' + stars + '</div>\u201C' + r.text + '\u201D<div class="who">' + r.who + '</div></div>';
+  }).join('');
+}
+
+function renderFooter(){
+  document.getElementById('footerBar').innerHTML = '<span>' + I18N[currentLang].footer + '</span>';
+}
+
+var packages = null;
+
+function renderTicket(key){
+  packages = I18N[currentLang].packages;
+  var pkg = packages[key];
+  var idea1 = I18N[currentLang].idea1;
+  if(lastTicketNum === null){ lastTicketNum = 'VK-' + (100 + Math.floor(Math.random() * 800)); }
+  var html = ''
+    + '<div class="ticket-result">'
+    + '<div class="t-head">'
+    + '<div><div class="t-num mono">' + idea1.ticketNr + ' ' + lastTicketNum + '</div><div class="t-name">' + pkg.name + '</div></div>'
+    + '<div class="t-price mono">' + pkg.price + '</div>'
+    + '</div>'
+    + '<ul class="t-list">' + pkg.items.map(function(i){ return '<li>' + i + '</li>'; }).join('') + '</ul>'
+    + '<div class="t-actions">'
+    + '<a class="btn btn-primary" href="https://velo-klinik.ch/online-terminbuchung/">' + idea1.bookBtn.replace('{pkg}', pkg.name) + '</a>'
+    + '<a class="btn btn-outline" href="https://velo-klinik.ch/services/">' + idea1.compareBtn + '</a>'
+    + '</div>'
+    + '</div>';
+  document.getElementById('ticketResult').innerHTML = html;
+}
+
+function setLanguage(lang){
+  currentLang = lang;
+  document.documentElement.lang = lang;
+  applyStaticTranslations();
+  renderLocations();
+  renderProcessAndReviews();
+  renderFooter();
+  if(lastRecommendedKey){ renderTicket(lastRecommendedKey); }
+  document.querySelectorAll('.lang-btn').forEach(function(b){
+    var on = b.getAttribute('data-lang') === lang;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+}
+
+document.getElementById('langSwitch').addEventListener('click', function(e){
+  var btn = e.target.closest('.lang-btn');
+  if(btn){ setLanguage(btn.getAttribute('data-lang')); }
+});
+
+
+(function(){
+  var state = { usage:null, last:null, type:null };
+  var shell = document.getElementById('wizardShell');
+
+  function selectOpt(group, btn){
+    var container = shell.querySelector('[data-group="' + group + '"]');
+    Array.prototype.forEach.call(container.querySelectorAll('.opt'), function(o){ o.classList.remove('sel'); });
+    btn.classList.add('sel');
+    state[group === 'usage' ? 'usage' : group === 'last' ? 'last' : 'type'] = btn.getAttribute('data-value');
+  }
+
+  Array.prototype.forEach.call(shell.querySelectorAll('.opt'), function(btn){
+    btn.addEventListener('click', function(){
+      var group = btn.parentElement.getAttribute('data-group');
+      selectOpt(group, btn);
+      var errId = group === 'usage' ? 'err1' : group === 'last' ? 'err2' : 'err3';
+      document.getElementById(errId).style.display = 'none';
+    });
+  });
+
+  function goStep(n){
+    Array.prototype.forEach.call(shell.querySelectorAll('.step'), function(s){ s.style.display = 'none'; });
+    shell.querySelector('[data-step="' + n + '"]').style.display = 'block';
+    var dots = shell.querySelectorAll('.progress-dots span');
+    dots.forEach(function(d){ d.classList.remove('active'); });
+    if(n === 1) dots[0].classList.add('active');
+    if(n === 2){ dots[0].classList.add('active'); dots[1].classList.add('active'); }
+    if(n === 3 || n === 'result'){ dots[0].classList.add('active'); dots[1].classList.add('active'); dots[2].classList.add('active'); }
+  }
+
+  document.getElementById('next1').addEventListener('click', function(){
+    if(!state.usage){ document.getElementById('err1').style.display = 'block'; return; }
+    goStep(2);
+  });
+  document.getElementById('back2').addEventListener('click', function(){ goStep(1); });
+  document.getElementById('next2').addEventListener('click', function(){
+    if(!state.last){ document.getElementById('err2').style.display = 'block'; return; }
+    goStep(3);
+  });
+  document.getElementById('back3').addEventListener('click', function(){ goStep(2); });
+
+  function recommend(usage, last, type){
+    if(type === 'stadt'){
+      return (last === 'nie' || last === '12plus') ? 'silver' : 'bronze';
+    }
+    var score = (last === 'nie' || last === '12plus') ? 3 : (last === '6-12' ? 2 : 1);
+    if(usage === 'sport') score += 1;
+    if(score >= 4) return 'platinum';
+    if(score === 3) return 'gold';
+    if(score === 2) return 'silver';
+    return 'bronze';
+  }
+
+  document.getElementById('showResult').addEventListener('click', function(){
+    if(!state.type){ document.getElementById('err3').style.display = 'block'; return; }
+    var key = recommend(state.usage, state.last, state.type);
+    lastRecommendedKey = key;
+    renderTicket(key);
+    goStep('result');
+  });
+
+  document.getElementById('resetWizard').addEventListener('click', function(){
+    state = { usage:null, last:null, type:null };
+    lastRecommendedKey = null;
+    lastTicketNum = null;
+    Array.prototype.forEach.call(shell.querySelectorAll('.opt'), function(o){ o.classList.remove('sel'); });
+    goStep(1);
+  });
+})();
+
+setLanguage('de');
+</script>
+
+<script>
+(function(){
+  var extra = {
+    de:{ stat1v:'3', stat1l:'Werkstätten in Zürich &amp; Schwyz', stat2v:'4', stat2l:'Servicepakete mit Fixpreis', stat3v:'ab <em>CHF 79</em>', stat3l:'Bronze Service',
+         photoNote:'<b>Hero-Bild:</b> Referenzfoto als Platzhalter für den Prototyp. Für die finale Seite durch eigene Fotos der VeloKliniK-Werkstätten ersetzen (<code>assets/hero.jpg</code>).' },
+    fr:{ stat1v:'3', stat1l:'Ateliers à Zurich et Schwyz', stat2v:'4', stat2l:'Forfaits à prix fixe', stat3v:'dès <em>CHF 79</em>', stat3l:'Forfait Bronze',
+         photoNote:'<b>Image du héros :</b> photo de référence provisoire pour le prototype. Pour la version finale, la remplacer par des photos des ateliers VeloKliniK (<code>assets/hero.jpg</code>).' },
+    it:{ stat1v:'3', stat1l:'Officine a Zurigo e Svitto', stat2v:'4', stat2l:'Pacchetti a prezzo fisso', stat3v:'da <em>CHF 79</em>', stat3l:'Servizio Bronze',
+         photoNote:'<b>Immagine hero:</b> foto di riferimento provvisoria per il prototipo. Per la versione finale, sostituirla con foto delle officine VeloKliniK (<code>assets/hero.jpg</code>).' },
+    en:{ stat1v:'3', stat1l:'Workshops in Zurich &amp; Schwyz', stat2v:'4', stat2l:'Fixed-price service packages', stat3v:'from <em>CHF 79</em>', stat3l:'Bronze service',
+         photoNote:'<b>Hero image:</b> reference photo used as a prototype placeholder. For the final site, replace it with photos of the VeloKliniK workshops (<code>assets/hero.jpg</code>).' }
+  };
+  Object.keys(extra).forEach(function(l){ I18N[l].extra = extra[l]; });
+  setLanguage(currentLang);
+
+  var tb = document.getElementById('topbar');
+  function onScroll(){ tb.classList.toggle('scrolled', window.scrollY > 40); }
+  window.addEventListener('scroll', onScroll, {passive:true}); onScroll();
+
+  var els = document.querySelectorAll('.reveal');
+  if('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, {threshold:0.12});
+    els.forEach(function(el){ io.observe(el); });
+  } else { els.forEach(function(el){ el.classList.add('in'); }); }
+})();
+</script>
+</body>
+</html>
