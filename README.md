@@ -14,7 +14,6 @@ Prototipo interactivo para presentar al cliente tres ideas de mejora de experien
 
 - Héroe a pantalla completa con foto de taller.
 - 4 idiomas: alemán (por defecto), francés, italiano e inglés, con selector en la barra superior.
-- Interruptor de **notas de diseño** para explicar el razonamiento de cada idea durante la presentación; apagado muestra la web limpia.
 - Adaptable a móvil.
 - Sin dependencias ni proceso de build: un único `index.html` más la carpeta `assets/`.
 
