@@ -1,23 +1,26 @@
-# VeloKliniK — UX Improvement Prototype
+# VeloKliniK — Website Prototype
 
-An interactive prototype presenting three user-experience improvements for the current [velo-klinik.ch](https://velo-klinik.ch/) website, built to be shown to the client.
+An interactive, client-ready prototype of a redesigned [velo-klinik.ch](https://velo-klinik.ch/), built to be shown to the client.
 
 **Live demo:** https://joanmarti.github.io/veloklinik-prototipo/
 
 Repository: https://github.com/JoanMarti/veloklinik-prototipo
 
-## The three ideas
+## What it includes
 
-1. **Interactive service finder.** A three-question quiz (how the bike is used, when it was last serviced, bike type) that recommends the Bronze, Silver, Gold or Platinum package with its price, presented as a "diagnosis ticket" that links to online booking.
-2. **Live workshop locations.** The three workshops (Europaallee Zürich HB, Altstetten Zürich and Sattel Schwyz) show whether they are open right now, based on the visitor's browser clock, with direct buttons for directions and booking.
-3. **Process and trust.** A four-step walkthrough (drop-off, estimate, repair, pick-up) and a reviews block to reduce the uncertainty of leaving a bike with a new workshop.
+- **Hero** with a large workshop photo, booking call to action and key figures, followed by a ticker of bike types.
+- **Service finder.** A three-question quiz (how the bike is used, when it was last serviced, bike type) that recommends a package and shows it as a "diagnosis ticket" linking to online booking.
+- **Packages.** Bronze, Silver, Gold and Platinum with prices and service intervals; the package recommended by the finder is highlighted. Includes a link to the price list.
+- **Extras.** Test and rental (coming soon), repair course and upgrades.
+- **Locations.** Europaallee Zürich HB, Altstetten Zürich and Sattel Schwyz, each with a photo, live open/closed status from the visitor's browser clock, and buttons for directions and booking.
+- **Process and trust.** A four-step walkthrough (drop-off, estimate, repair, pick-up) and a reviews block.
+- **Newsletter.** An integrated sign-up section with e-mail validation, consent checkbox and topic chips.
+- Four languages: German (default), French, Italian and English.
+- Responsive layout; no dependencies and no build step.
 
-## Features
+## Newsletter setup
 
-- Full-screen hero with a workshop photo.
-- Four languages: German (default), French, Italian and English, with a switcher in the top bar.
-- Responsive layout for mobile.
-- No dependencies and no build step: a single `index.html` plus the `assets/` folder.
+The form works in demo mode by default: it validates the input and shows a confirmation, but **stores nothing**. To collect real sign-ups, set the `NEWSLETTER_ENDPOINT` constant in the second `<script>` block of `index.html` to a URL that accepts a JSON `POST` (for example a Brevo, Mailchimp or Formspree endpoint, or your own backend). Also add a link to the real privacy policy next to the consent checkbox.
 
 ## Project structure
 
