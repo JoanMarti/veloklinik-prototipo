@@ -128,7 +128,21 @@
   #standorte .eyebrow::before{background:#ff8a8d;}
   #standorte .section-lead{color:rgba(255,255,255,0.72);}
   .loc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
-  @media (max-width:900px){.loc-grid{grid-template-columns:1fr;}}
+    .loc-dots,.pkg-dots{display:none;}
+  @media (max-width:900px){
+    .loc-grid{display:flex;grid-template-columns:none;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin:0 -20px;padding:6px 20px 18px;scroll-padding:0 20px;overscroll-behavior-x:contain;}
+    .loc-grid::-webkit-scrollbar{display:none;}
+    .loc-card{flex:0 0 84%;max-width:380px;scroll-snap-align:center;}
+    .loc-card:hover{transform:none;}
+    .loc-top{flex-wrap:wrap;}
+    .loc-dots,.pkg-dots{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:2px;}
+  }
+  .pkg-dots button{width:9px;height:9px;padding:0;border:0;border-radius:99px;background:rgba(21,23,26,0.22);cursor:pointer;transition:width .25s ease,background .25s ease;}
+  .pkg-dots button.on{width:26px;background:var(--red);}
+  .pkg-dots button:focus-visible{outline:2px solid var(--ink);outline-offset:3px;}
+  .loc-dots button{width:9px;height:9px;padding:0;border:0;border-radius:99px;background:rgba(255,255,255,0.35);cursor:pointer;transition:width .25s ease,background .25s ease;}
+  .loc-dots button.on{width:26px;background:var(--red);}
+  .loc-dots button:focus-visible{outline:2px solid #fff;outline-offset:3px;}
   .loc-card{background:var(--bone-2);color:var(--ink);border-radius:18px;padding:0 22px 24px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,0.55),0 24px 44px -26px rgba(0,0,0,0.8);transition:transform .2s ease,box-shadow .2s ease;}
   .loc-card:hover{transform:translateY(-6px);box-shadow:0 0 0 1px rgba(255,255,255,0.7),0 34px 56px -22px rgba(0,0,0,0.85);}
   .loc-card::before{content:'';display:block;height:190px;margin:0 -22px 20px;background-size:cover;background-position:center;}
@@ -224,6 +238,13 @@
   .pkg li::before{content:'✓';color:var(--green);font-weight:700;flex:none;}
   .pkg.dark li::before{color:#7fd2a6;}
   .pkg .btn{margin-top:auto;width:100%;}
+  @media (max-width:900px){
+    .pkg-grid{display:flex;grid-template-columns:none;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin:0 -20px;padding:26px 20px 20px;scroll-padding:0 20px;overscroll-behavior-x:contain;}
+    .pkg-grid::-webkit-scrollbar{display:none;}
+    .pkg{flex:0 0 82%;max-width:360px;scroll-snap-align:center;}
+    .pkg:hover{transform:none;}
+    .pkg.reco{transform:none;}
+  }
   .pkg-foot{margin-top:44px;display:grid;gap:22px;}
   .pkg-vat{font-size:12px;color:var(--off);margin:0;}
   .alacarte{display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap;background:var(--white);border-radius:18px;padding:24px 28px;box-shadow:0 0 0 1px var(--line);}
@@ -509,6 +530,7 @@
       <p class="section-lead" data-i18n="pkgs.lead">…</p>
     </div>
     <div class="pkg-grid reveal" id="pkgGrid"></div>
+    <div class="pkg-dots" id="pkgDots"></div>
     <div class="pkg-foot reveal">
       <p class="pkg-vat mono" data-i18n="pkgs.vat">…</p>
       <div class="alacarte">
@@ -541,6 +563,7 @@
       <p class="section-lead" data-i18n="idea2.lead">…</p>
     </div>
     <div class="loc-grid reveal" id="locGrid"></div>
+    <div class="loc-dots" id="locDots"></div>
   </div>
 </section>
 
@@ -977,6 +1000,39 @@ function renderLocations(){
       + '</div>'
       + '</div>';
   }).join('');
+  initLocCarousel();
+}
+
+function initCarousel(gridId, dotsId, cardSel, labels, startIdx){
+  var grid = document.getElementById(gridId);
+  var dots = document.getElementById(dotsId);
+  var cards = grid.querySelectorAll(cardSel);
+  dots.innerHTML = labels.map(function(l, i){
+    return '<button type="button" aria-label="' + l + '"' + (i === (startIdx || 0) ? ' class="on"' : '') + '></button>';
+  }).join('');
+  function pos(i){ var c = cards[i]; return c.offsetLeft - (grid.clientWidth - c.offsetWidth) / 2; }
+  dots.querySelectorAll('button').forEach(function(b, i){
+    b.addEventListener('click', function(){ grid.scrollTo({left: pos(i), behavior: 'smooth'}); });
+  });
+  if(startIdx && grid.scrollWidth > grid.clientWidth + 4){ grid.scrollLeft = pos(startIdx); }
+  if(!grid._cBound){
+    grid._cBound = true;
+    var t;
+    grid.addEventListener('scroll', function(){
+      clearTimeout(t);
+      t = setTimeout(function(){
+        var cs = grid.querySelectorAll(cardSel), bs = document.querySelectorAll('#' + dotsId + ' button');
+        var mid = grid.scrollLeft + grid.clientWidth / 2, best = 0, d = 1e9;
+        cs.forEach(function(c, i){ var x = Math.abs(c.offsetLeft + c.offsetWidth / 2 - mid); if(x < d){ d = x; best = i; } });
+        bs.forEach(function(b, i){ b.classList.toggle('on', i === best); });
+      }, 40);
+    }, {passive:true});
+  }
+}
+
+function initLocCarousel(){
+  var locs = I18N[currentLang].locations;
+  initCarousel('locGrid', 'locDots', '.loc-card', LOCATION_ORDER.map(function(id){ return locs[id].name; }));
 }
 
 function renderProcessAndReviews(){
@@ -1353,6 +1409,8 @@ function renderPackages(){
       + '<a class="btn ' + btn + '" href="' + BOOKING_URL + '">' + P.book + '</a>'
       + '</article>';
   }).join('');
+  var ri = keys.indexOf(lastRecommendedKey);
+  initCarousel('pkgGrid', 'pkgDots', '.pkg', keys.map(function(k){ return names[k].name; }), ri < 0 ? 0 : ri);
 }
 
 var X_ICONS = [

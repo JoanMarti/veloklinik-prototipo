@@ -16,7 +16,7 @@ Repository: https://github.com/JoanMarti/veloklinik-prototipo
 - **Process and trust.** A four-step walkthrough (drop-off, estimate, repair, pick-up) and a reviews block.
 - **Newsletter.** An integrated sign-up section with e-mail validation, consent checkbox and topic chips.
 - Four languages: German (default), French, Italian and English.
-- Responsive layout; no dependencies and no build step.
+- Responsive layout: on mobile the workshop cards and the service packages become swipeable carousels with dot navigation. No dependencies and no build step.
 
 ## Newsletter setup
 
