@@ -222,6 +222,7 @@
   .pkg:hover{transform:translateY(-4px);}
   .pkg.dark{background:var(--ink);color:#fff;box-shadow:0 0 0 1px rgba(255,255,255,0.08),0 22px 40px -26px rgba(21,23,26,0.7);}
   .pkg.reco{box-shadow:0 0 0 2px var(--red),0 28px 48px -26px rgba(200,39,43,0.6);transform:translateY(-6px);}
+  .pkg.top{box-shadow:0 0 0 2px var(--red),0 28px 48px -26px rgba(200,39,43,0.45);}
   .pkg-badge{position:absolute;top:-13px;left:22px;background:var(--red);color:#fff;font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:600;padding:6px 12px;border-radius:999px;}
   .pkg-tier{display:flex;gap:6px;margin-bottom:18px;}
   .pkg-tier i{width:10px;height:10px;border-radius:50%;background:var(--line-strong);}
@@ -1200,6 +1201,7 @@ var NEW_I18N = {
         platinum:[`Alles aus Gold`,`Alle Komponenten demontieren und montieren`,`Schmierung aller Teile`]
       },
       recommended:`Empfohlen für dich`,
+      topPick:`Unsere Empfehlung`,
       book:`Termin buchen`,
       vat:`Alle Preise inklusive 8,1 % Mehrwertsteuer. Exklusive Verbrauchsmaterial.`,
       alacarteTitle:`À la carte`,
@@ -1249,6 +1251,7 @@ var NEW_I18N = {
         platinum:[`Tout le forfait Gold`,`Démontage et remontage de tous les composants`,`Graissage de toutes les pièces`]
       },
       recommended:`Recommandé pour toi`,
+      topPick:`Notre recommandation`,
       book:`Réserver un rendez-vous`,
       vat:`Tous les prix incluent 8,1 % de TVA. Consommables non inclus.`,
       alacarteTitle:`À la carte`,
@@ -1298,6 +1301,7 @@ var NEW_I18N = {
         platinum:[`Tutto il pacchetto Gold`,`Smontaggio e rimontaggio di tutti i componenti`,`Lubrificazione di tutte le parti`]
       },
       recommended:`Consigliato per te`,
+      topPick:`Il nostro consiglio`,
       book:`Prenota un appuntamento`,
       vat:`Tutti i prezzi includono l'8,1 % di IVA. Materiale di consumo escluso.`,
       alacarteTitle:`À la carte`,
@@ -1347,6 +1351,7 @@ var NEW_I18N = {
         platinum:[`Everything in Gold`,`Full disassembly and reassembly of all parts`,`Lubrication of every part`]
       },
       recommended:`Recommended for you`,
+      topPick:`Our recommendation`,
       book:`Book an appointment`,
       vat:`All prices include 8.1% VAT. Consumables not included.`,
       alacarteTitle:`À la carte`,
@@ -1396,11 +1401,13 @@ function renderPackages(){
   var keys = ['bronze', 'silver', 'gold', 'platinum'];
   document.getElementById('pkgGrid').innerHTML = keys.map(function(k, i){
     var reco = lastRecommendedKey === k;
+    var top = !lastRecommendedKey && k === 'gold';
     var dots = '';
     for(var d = 0; d < 4; d++){ dots += '<i' + (d <= i ? ' class="on"' : '') + '></i>'; }
     var btn = reco ? 'btn-primary' : (k === 'platinum' ? 'btn-ghost' : 'btn-outline');
-    return '<article class="pkg' + (k === 'platinum' ? ' dark' : '') + (reco ? ' reco' : '') + '">'
+    return '<article class="pkg' + (k === 'platinum' ? ' dark' : '') + (reco ? ' reco' : '') + (top ? ' top' : '') + '">'
       + (reco ? '<span class="pkg-badge">' + P.recommended + '</span>' : '')
+      + (top ? '<span class="pkg-badge">★ ' + P.topPick + '</span>' : '')
       + '<div class="pkg-tier" aria-hidden="true">' + dots + '</div>'
       + '<h3>' + names[k].name + '</h3>'
       + '<div class="pkg-int mono">' + P.interval[k] + '</div>'
